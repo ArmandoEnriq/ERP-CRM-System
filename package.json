@@ -1,0 +1,33 @@
+{
+  "name": "erp-crm-system",
+  "version": "1.0.0",
+  "description": "Sistema ERP/CRM Full-Stack con NestJS y React",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm run test",
+    "test:frontend": "cd frontend && npm run test",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up",
+    "docker:prod": "docker-compose -f docker-compose.prod.yml up",
+    "db:migrate": "cd backend && npm run typeorm:run",
+    "db:seed": "cd backend && npm run seed:run",
+    "setup": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "keywords": [
+    "erp",
+    "crm",
+    "nestjs",
+    "react",
+    "typescript"
+  ],
+  "author": "Armando",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

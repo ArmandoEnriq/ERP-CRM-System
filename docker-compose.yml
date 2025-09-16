@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  database:
+    image: postgres:15-alpine
+    container_name: erp-crm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: erp_crm_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=es_ES.UTF-8 --lc-ctype=es_ES.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./database/seeds:/docker-entrypoint-initdb.d/seeds:ro
+    networks:
+      - erp-crm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d erp_crm_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para cache y sesiones
+  redis:
+    image: redis:7-alpine
+    container_name: erp-crm-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redispassword
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - erp-crm-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Adminer para administración de BD (opcional)
+  adminer:
+    image: adminer:4.8.1
+    container_name: erp-crm-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: database
+      ADMINER_DESIGN: pepa-linha
+    networks:
+      - erp-crm-network
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  erp-crm-network:
+    driver: bridge

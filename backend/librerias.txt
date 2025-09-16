@@ -1,0 +1,118 @@
+ # ====================================
+# DEPENDENCIAS PRINCIPALES BACKEND
+# ====================================
+
+# Framework y core NestJS
+npm install @nestjs/common @nestjs/core @nestjs/platform-express
+
+# Base de datos y ORM
+npm install @nestjs/typeorm typeorm pg reflect-metadata
+npm install -D @types/pg
+
+# Autenticación y seguridad
+npm install @nestjs/jwt @nestjs/passport passport passport-jwt passport-local
+npm install bcryptjs helmet
+npm install -D @types/bcryptjs @types/passport-jwt @types/passport-local
+
+# Validación y transformación de datos
+npm install @nestjs/class-validator @nestjs/class-transformer
+npm install class-validator class-transformer
+
+# Configuración de environment
+npm install @nestjs/config joi
+
+# Documentación API Swagger
+npm install @nestjs/swagger swagger-ui-express
+
+# CORS y middleware de seguridad
+npm install cors
+npm install -D @types/cors
+
+# Rate limiting y throttling
+npm install @nestjs/throttler
+
+# Sistema de logs
+npm install @nestjs/winston winston winston-daily-rotate-file
+
+# Sistema de caché
+npm install @nestjs/cache-manager cache-manager
+
+# File upload y manejo de archivos
+npm install @nestjs/platform-express multer
+npm install -D @types/multer
+
+# Sistema de emails
+npm install @nestjs/mailer nodemailer handlebars
+npm install -D @types/nodemailer
+
+# Queue system para tareas asíncronas
+npm install @nestjs/bull bull redis
+npm install -D @types/bull
+
+# Utilidades
+npm install lodash moment uuid
+npm install -D @types/lodash @types/moment @types/uuid
+
+# Testing avanzado
+npm install -D @nestjs/testing supertest @types/supertest jest
+
+# Compresión de respuestas HTTP
+npm install compression
+npm install -D @types/compression
+
+# Manejo de fechas
+npm install @nestjs/schedule
+
+
+Estructura**
+src
+src/accounting
+src/accounting/dto
+src/accounting/entities
+src/auth
+src/auth/decorators
+src/auth/dto
+src/auth/guards
+src/auth/strategies
+src/common
+src/common/decorators
+src/common/filters
+src/common/guards
+src/common/interceptors
+src/common/pipes
+src/common/utils
+src/companies
+src/companies/dto
+src/companies/entities
+src/config
+src/customers
+src/customers/dto
+src/customers/entities
+src/database
+src/database/factories
+src/database/migrations
+src/database/seeds
+src/integrations
+src/inventory
+src/inventory/dto
+src/inventory/entities
+src/invoices
+src/invoices/dto
+src/invoices/entities
+src/leads
+src/leads/dto
+src/leads/entities
+src/notifications
+src/orders
+src/orders/dto
+src/orders/entities
+src/products
+src/products/dto
+src/products/entities
+src/reports
+src/sales
+src/sales/dto
+src/sales/entities
+src/users
+src/users/dto
+src/users/entities

@@ -1,0 +1,61 @@
+/* src/index.css */
+
+/* Importar Tailwind directamente (toda la base + utilidades) */
+@import "tailwindcss";
+
+/* Google Fonts y uso de display=swap para mostrar la fuente del sistema primero y despu remplace por la fuente remota */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"); /* texto de la familia Inter */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap"); /* texto de la familia JetBrains Mono para códigos */
+
+/*Creamos Variables CSS globales */
+:root {
+  --header-height: 64px;
+  --sidebar-width: 256px;
+  --sidebar-collapsed-width: 64px;
+} /* ejem. width: var(--header-height); */
+
+/* Reset/Base Styles (ya parte de Tailwind con la importación) */
+* {
+  box-sizing: border-box;
+} /* hacemos que el padding y el border se incluyan en el ancho total */
+html {
+  scroll-behavior: smooth; /* desplazamiento suave */
+}
+body {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, sans-serif; /* texto en fallback (si la fuente no se carga la que sigue)*/
+  line-height: 1.5; /* interlineado vertical de 1.5 */
+  -webkit-font-smoothing: antialiased; /* suavizamos los bordes de las letras */
+  -moz-osx-font-smoothing: grayscale; /* suavizamos los bordes de las letras para firefox mac */
+}
+
+/* Scrollbar personalizado a pseudo-elementos (::) en navegadores basados en WebKit/Chrome */
+::-webkit-scrollbar {
+  width: 6px; /* ancho de la barra de desplazamiento */
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-100; /* fondo de la barra de desplazamiento */
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full; /* color y borde de la barra deslizante */
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400; /* color de la barra deslizante al pasar el cursor */
+}
+
+/* Componentes personalizados */
+@layer components {
+  /* definimos que sera una capa de estilos de components (por ejemplo botones,formularios,etc) */
+  .btn {
+    /* Botón moderno: padding mayor, sombra, colores vivos, transición suave, efecto hover */
+    @apply inline-flex items-center justify-center px-6 py-2.5 text-base font-semibold rounded-lg shadow-md bg-blue-600 text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 hover:bg-blue-700 hover:shadow-lg active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  /* otros componentes personalizados... */
+}
+
+@layer utilities {
+  /* definimos que sera una capa de estilos de utilidades (clases pequenas de una sola utilidad) */
+  .text-balance {
+    text-wrap: balance; /* alinea el texto de forma equilibrada */
+  }
+}

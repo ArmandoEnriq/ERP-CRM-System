@@ -1,0 +1,87 @@
+# FASE 3.2: Instalación de dependencias principales
+# ================================================
+
+# 🚀 ROUTING
+npm install react-router-dom
+
+# 🎨 UI Y ESTILOS
+# Instalar Tailwind CSS
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+
+# Componentes UI y iconos
+npm install @headlessui/react @heroicons/react lucide-react
+
+# 🗂️ ESTADO GLOBAL
+npm install zustand
+
+# 📝 FORMULARIOS
+npm install react-hook-form @hookform/resolvers yup
+
+# 🌐 HTTP CLIENT
+npm install axios
+
+# 📊 GRÁFICOS Y CHARTS
+npm install recharts
+
+# 📋 TABLAS DE DATOS
+npm install @tanstack/react-table
+
+# 📅 FECHAS
+npm install date-fns
+
+# 🔔 NOTIFICACIONES
+npm install react-hot-toast
+
+# ⏳ LOADING Y SPINNERS
+npm install react-spinners
+
+# 🧰 UTILIDADES
+npm install clsx lodash
+
+# 🧪 TESTING
+npm install -D @testing-library/react @testing-library/jest-dom @testing-library/user-event
+
+# 📄 PDF GENERATION (opcional para reportes)
+npm install jspdf html2canvas
+
+# 📊 EXCEL EXPORT (opcional para reportes)
+npm install exceljs
+# y sheel excel
+npm install https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz
+
+# 🎯 DRAG AND DROP (opcional para interfaces avanzadas)
+npm install @hello-pangea/dnd
+
+Estructura** 
+src
+src/assets
+src/assets/fonts
+src/assets/icons
+src/assets/images
+src/components
+src/components/charts
+src/components/forms
+src/components/layout
+src/components/modals
+src/components/tables
+src/components/ui
+src/hooks
+src/pages
+src/pages/auth
+src/pages/crm
+src/pages/crm/customers
+src/pages/crm/leads
+src/pages/crm/sales
+src/pages/dashboard
+src/pages/erp
+src/pages/erp/inventory
+src/pages/erp/invoices
+src/pages/erp/orders
+src/pages/erp/products
+src/pages/reports
+src/pages/settings
+src/services
+src/store
+src/styles
+src/utils
