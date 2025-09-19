@@ -1,49 +1,65 @@
-version: '3.8'
-
+# Definimos los servicios fundamentales que se comparten entre dev y prod los cuales son postgres, redis y adminer
 services:
   # Base de datos PostgreSQL
   database:
     image: postgres:15-alpine
     container_name: erp-crm-db
-    restart: unless-stopped
+    restart: unless-stopped # Se reinicia siempre que haya alguna falla o cualquier cambio
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: erp_crm_db
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=es_ES.UTF-8 --lc-ctype=es_ES.UTF-8"
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-erp_crm_db}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=es_ES.UTF-8 --lc-ctype=es_ES.UTF-8" # Configuraciones para el idioma español
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
-      - ./database/seeds:/docker-entrypoint-initdb.d/seeds:ro
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro # Cargamos el script de inicialización
+      - ./database/seeds:/docker-entrypoint-initdb.d/seeds:ro # Cargamos el script de primeros datos
+      - ./database/backups:/backups # Cargamos el script de backups (respaldo de BD)
     networks:
       - erp-crm-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d erp_crm_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    healthcheck: # verificador del contenedor
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-erp_crm_db}"] # Comprobamos que la BD este disponible
+      interval: 10s # verificar cada 10s
+      timeout: 5s # tiempo de espera de respueta
+      retries: 5 # reintentos (si no responde en 5 intentos se considera error en el contenedor)
+    deploy: # configuraciones de despliegue
+      resources: # configuraciones de recursos del contenedor
+        limits: # limites
+          memory: 512M # 512MB de memoria maxima 
+          cpus: '0.5' # 0.5 CPUs maximos
+
 
   # Redis para cache y sesiones
   redis:
     image: redis:7-alpine
     container_name: erp-crm-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass redispassword
+    command: > # comandos de arranque (1 ejecutamos redis y 2 activamos la persistencia de datos, 3 uso de password (por defecto redispassword), 4 establecemos el tamaño de la memoria y 5 establecemos que si se sobrepasa el limite de memoria se destruye la cache menos usada)
+      redis-server 
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-redispassword}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:
       - erp-crm-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+    healthcheck: # verificador del contenedor
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]  # Comprobamos que funcione bien el contenedor redis con esos comandos
+      interval: 10s # verificar cada 10s
+      timeout: 3s # tiempo de espera de respueta
+      retries: 5 # reintentos (si no responde en 5 intentos se considera error en el contenedor)
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
 
-  # Adminer para administración de BD (opcional)
+  # Adminer para administración de BD
   adminer:
     image: adminer:4.8.1
     container_name: erp-crm-adminer
@@ -51,20 +67,34 @@ services:
     ports:
       - "8080:8080"
     environment:
-      ADMINER_DEFAULT_SERVER: database
-      ADMINER_DESIGN: pepa-linha
+      ADMINER_DEFAULT_SERVER: ${ADMINER_DB:-database}
+      ADMINER_DESIGN: ${ADMINER_DESIGN:-pepa-linha}
+      ADMINER_PLUGINS: tables-filter tinymce
+      PGADMIN_DEFAULT_EMAIL: ${ADMINER_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMINER_PASSWORD:-admin}
     networks:
       - erp-crm-network
     depends_on:
-      database:
-        condition: service_healthy
+      database: # depende de la BD
+        condition: service_healthy  # si la BD no tiene problemas se arranca el adminer
 
-volumes:
+volumes: # persistencia de datos
   postgres_data:
-    driver: local
+    driver: local  # definimos que la persistencia de datos es gestionada por el propio docker de forma local
+    driver_opts: # configuraciones de la persistencia 
+      type: none # deifinimos que no hay ningun tipo de datos especiales
+      o: bind # enlace directo entre una carpeta de tu host y una carpeta del contenedor.
+      device: ${PWD}/data/postgres # la carpeta donde se almacenan los datos (pdw es la carpeta actual del proyecto)
   redis_data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/redis
 
 networks:
   erp-crm-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -4,7 +4,7 @@
 # =============================================
 # Stage 1: Build
 # =============================================
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Instalar dependencias del sistema
 RUN apk add --no-cache libc6-compat
@@ -35,9 +35,34 @@ ENV VITE_NODE_ENV=$VITE_NODE_ENV
 RUN npm run build
 
 # =============================================
-# Stage 2: Production
+# Stage 2: Development (NEW)
 # =============================================
-FROM nginx:alpine AS production
+FROM node:22-alpine AS development
+
+WORKDIR /app
+
+# Instalar dependencias necesarias para dev
+RUN apk add --no-cache bash
+
+# Copiar package.json y lock
+COPY package*.json ./
+
+# Instalar TODAS las dependencias (incluyendo devDependencies)
+RUN npm install
+
+# Copiar código fuente
+COPY . .
+
+# Exponer puerto de Vite
+EXPOSE 5173
+
+# Comando de desarrollo con hot reload
+CMD ["npm", "run", "dev", "--", "--host"]
+
+# =============================================
+# Stage 3: Production
+# =============================================
+FROM nginx:22-alpine AS production
 
 # Instalar curl para health checks
 RUN apk add --no-cache curl

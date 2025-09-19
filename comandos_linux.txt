@@ -1,0 +1,114 @@
+
+# =====================================================
+# ERP/CRM System - Guía Manual servicios especificos 
+# =====================================================
+
+# 🔧 CONFIGURACIÓN INICIAL
+chmod +x scripts/setup.sh
+./scripts/setup.sh
+
+cd backend && npm install
+cd ../frontend && npm install
+
+# 🖥️ ENTORNO DE DESARROLLO
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+docker compose down
+docker compose down && docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# 🗄 BASE DE DATOS
+docker compose up -d database redis adminer
+docker compose down -v
+docker volume rm erp-crm-system_postgres_data || true
+docker compose up -d database redis
+docker compose exec database /scripts/backup.sh
+docker compose logs -f database
+docker compose exec database psql -U postgres -d erp_crm_db
+
+# 🚀 APLICACIONES
+cd backend && npm run start:dev
+cd frontend && npm run dev
+cd backend && npm run build
+cd ../frontend && npm run build
+
+# ✅ PRUEBAS
+cd backend && npm run test
+cd ../frontend && npm run test
+cd backend && npm run test:e2e
+
+# 🧹 LINTER Y FORMATEO
+cd backend && npm run lint
+cd ../frontend && npm run lint
+cd backend && npm run format
+cd ../frontend && npm run format
+
+# 🌐 PRODUCCIÓN
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+
+# 📊 MONITOREO
+docker compose logs -f
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose ps
+docker stats $(docker ps --format "table {{.Names}}" | grep erp-crm | tr '\n' ' ')
+
+# 🧽 LIMPIEZA
+docker compose down -v
+docker system prune -f
+docker compose down -v --rmi all
+docker system prune -af
+
+
+
+# Servicios completos 
+
+# make setup → 
+./scripts/setup.sh
+
+# make dev →
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# make stop →
+docker compose down
+
+# make db-up →
+docker compose up -d database redis adminer
+
+# make db-backup →
+docker compose exec database pg_dump -U postgres -d erp_crm_db > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# make db-reset → (¡CUIDADO!)
+docker compose down -v
+docker volume rm erp-crm-system_postgres_data
+docker compose up -d database redis
+
+# make logs →
+docker compose logs -f
+
+# make status →
+docker compose ps
+
+# make shell-db →
+docker compose exec database psql -U postgres -d erp_crm_db
+
+# make clean →
+docker compose down -v
+docker system prune -f
+
+# make prod →
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+
+
+# si se empieza de 0 usamos el scrip setup para crear la estructura inicial 
+# Una sola vez al inicio
+chmod +x scripts/setup.sh
+./scripts/setup.sh
+
+# Para respaldos usamos backup
+# Backup rápido
+docker compose exec database pg_dump -U postgres -d erp_crm_db > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# O usar el script completo con todas las verificaciones
+docker compose exec database bash -c "/scripts/backup.sh"

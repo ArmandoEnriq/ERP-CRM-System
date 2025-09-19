@@ -3,7 +3,7 @@
 # ====================================
 
 # Stage 1: Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -19,11 +19,33 @@ COPY . .
 RUN npm run build
 
 # ====================================
-# Stage 2: Production stage
+# Stage 2: Development stage (NEW)
 # ====================================
-FROM node:18-alpine AS production
+FROM node:20-alpine AS development
 
-# Create app directory
+WORKDIR /app
+
+# Install bash and tools for development
+RUN apk add --no-cache bash dumb-init
+
+# Copy package.json first and install ALL dependencies (including dev)
+COPY package*.json ./
+RUN npm install
+
+# Copy entire source code (hot reload)
+COPY . .
+
+# Expose backend port
+EXPOSE 3000
+
+# Run NestJS in dev mode
+CMD ["npm", "run", "start:dev"]
+
+# ====================================
+# Stage 3: Production stage
+# ====================================
+FROM node:alpine AS production
+
 WORKDIR /app
 
 # Install dumb-init for proper signal handling
@@ -43,18 +65,12 @@ COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 # Create uploads directory
 RUN mkdir -p uploads logs && chown -R nestjs:nodejs uploads logs
 
-# Switch to non-root user
 USER nestjs
 
-# Expose port
 EXPOSE 3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node dist/health-check.js
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
-
-# Start the application
 CMD ["node", "dist/main.js"]

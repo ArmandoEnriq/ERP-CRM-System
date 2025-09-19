@@ -1,0 +1,94 @@
+
+services:
+  # Backend NestJS en desarrollo
+  backend:
+    build:
+      context: ./backend # le indicamos la carpeta que usara 
+      dockerfile: Dockerfile # le indicamos el Dockerfile
+      target: development # tipo de build
+    container_name: erp-crm-backend-dev 
+    restart: unless-stopped #reiniciar si falla
+    env_file:
+      - ./backend/.env.dev
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      DATABASE_HOST: database
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
+      APP_PORT: ${PORT:-3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - ./backend/src:/app/src:cached
+      - ./backend/test:/app/test:cached
+      - /app/node_modules
+    networks:
+      - erp-crm-network
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"] # comandos para comprobar si el contenedor funciona
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend React en desarrollo
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: erp-crm-frontend-dev
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env.dev
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+      VITE_APP_NAME: ${VITE_APP_NAME:-ERP/CRM System}
+      VITE_APP_VERSION: ${VITE_APP_VERSION:-1.0.0-dev}
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src:cached
+      - ./frontend/public:/app/public:cached
+      - /app/node_modules
+    networks:
+      - erp-crm-network
+    depends_on:
+      - backend
+
+  # PgAdmin para desarrollo (opcional)
+  pgadmin: # administrador de bases de datos
+    image: dpage/pgadmin4:latest
+    container_name: erp-crm-pgadmin
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMINER_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMINER_PASSWORD}
+      PGADMIN_LISTEN_PORT: ${PGADMIN_PORT:-5050}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - erp-crm-network
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  pgadmin_data:
+    driver: local
