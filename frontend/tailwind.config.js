@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */ // le indico que es un archivo de configuración de tailwind para que me de sugerencias en base a las librerias de tailwind
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"], // solo busca los archivos de js, ts, jsx y tsx y index para crear el css de las clases
-  plugins: [require("@tailwindcss/forms")], // plugin (libreria) de tailwind para formularios
+  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")], // plugin (libreria) de tailwind para formularios
   theme: {
     // configuración de temas
     extend: {
@@ -80,10 +80,16 @@ export default {
         sans: ["Inter", "ui-sans-serif", "system-ui"], // fuente principal familia inter
         mono: ["JetBrains Mono", "ui-monospace", "monospace"], // fuente secundaria familia jetbrains mono para codigos
       },
+      boxShadow: {
+        soft: "0 2px 15px rgba(0, 0, 0, 0.05)",
+        medium: "0 4px 20px rgba(0, 0, 0, 0.1)",
+        hard: "0 10px 40px rgba(0, 0, 0, 0.15)",
+      },
       animation: {
         // configuración de animaciones
         "fade-in": "fadeIn 0.5s ease-in-out", // animacion de entrada aparicion suave
         "slide-in": "slideIn 0.3s ease-out", // animacion deslizamiento suave desde arriba
+        "slide-up": "slideUp 0.3s ease-out", // animacion deslizamiento suave hacia arriba
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       }, // pulsacion lenta
       keyframes: {
@@ -94,6 +100,10 @@ export default {
         },
         slideIn: {
           "0%": { transform: "translateY(-10px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(20px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
       },

@@ -1,5 +1,5 @@
 
-services:
+services: 
   # Backend NestJS en desarrollo
   backend:
     build:
@@ -11,19 +11,7 @@ services:
     env_file:
       - ./backend/.env.dev
     environment:
-      NODE_ENV: ${NODE_ENV}
-      DATABASE_HOST: database
-      DATABASE_PORT: ${DATABASE_PORT}
-      DATABASE_USERNAME: ${DATABASE_USERNAME}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_NAME: ${DATABASE_NAME}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
-      APP_PORT: ${PORT:-3000}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      NODE_ENV: development
     ports:
       - "${PORT:-3000}:3000"
     volumes:

@@ -6,12 +6,12 @@ services:
     container_name: erp-crm-db
     restart: unless-stopped # Se reinicia siempre que haya alguna falla o cualquier cambio
     environment:
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-      POSTGRES_DB: ${DB_NAME:-erp_crm_db}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: erp_crm_db
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=es_ES.UTF-8 --lc-ctype=es_ES.UTF-8" # Configuraciones para el idioma español
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro # Cargamos el script de inicialización
