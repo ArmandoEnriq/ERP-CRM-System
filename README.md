@@ -70,3 +70,4 @@ erp-crm-system/
 ## Licencia
 
 MIT
+<img width="1238" height="859" alt="image" src="https://github.com/user-attachments/assets/ee64f1bf-51e8-4737-98b0-fa602deff707" />
