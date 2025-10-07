@@ -1,81 +1,100 @@
-// Servicio de usuarios
-// QUÉ HACE: Maneja todas las operaciones relacionadas con empresas/organizaciones
-// PARA QUÉ:
-// - Multi-tenancy: Cada usuario puede pertenecer a una/varias empresas
-// - Configuración empresarial (datos fiscales, logos, configuraciones)
-// - Gestión de sucursales o departamentos
-// - Permisos y roles por empresa
-
 import { apiClient } from "./api";
-import { API_CONFIG } from "@/utils/constants";
+import { objectToQueryString } from "@/utils/helpers";
+
+const USERS_BASE = "/users";
 
 export const usersService = {
-  // Get all users with pagination
-  async getUsers(params = {}) {
-    const response = await apiClient.get(API_CONFIG.ENDPOINTS.USERS.BASE, {
-      params,
-    });
-    return response.data;
+  /**
+   * Listar usuarios con filtros y paginación
+   */
+  getAll: async (params = {}) => {
+    const queryString = objectToQueryString(params);
+    return await apiClient.get(`${USERS_BASE}${queryString}`);
   },
 
-  // Get user by ID
-  async getUserById(id) {
-    const response = await apiClient.get(
-      `${API_CONFIG.ENDPOINTS.USERS.BASE}/${id}`
+  /**
+   * Obtener usuario por ID
+   */
+  getById: async (id) => {
+    return await apiClient.get(`${USERS_BASE}/${id}`);
+  },
+
+  /**
+   * Obtener perfil del usuario actual
+   */
+  getProfile: async () => {
+    return await apiClient.get(`${USERS_BASE}/profile`);
+  },
+
+  /**
+   * Crear nuevo usuario
+   */
+  create: async (userData) => {
+    return await apiClient.post(USERS_BASE, userData);
+  },
+
+  /**
+   * Actualizar usuario
+   */
+  update: async (id, userData) => {
+    return await apiClient.patch(`${USERS_BASE}/${id}`, userData);
+  },
+
+  /**
+   * Actualizar perfil propio
+   */
+  updateProfile: async (userData) => {
+    return await apiClient.patch(`${USERS_BASE}/profile`, userData);
+  },
+
+  /**
+   * Eliminar usuario (soft delete)
+   */
+  delete: async (id) => {
+    return await apiClient.delete(`${USERS_BASE}/${id}`);
+  },
+
+  /**
+   * Cambiar estado del usuario
+   */
+  changeStatus: async (id, status) => {
+    return await apiClient.patch(`${USERS_BASE}/${id}/status`, { status });
+  },
+
+  /**
+   * Bloquear/Desbloquear usuario
+   */
+  toggleLock: async (id, isLocked) => {
+    return await apiClient.patch(`${USERS_BASE}/${id}/lock`, { isLocked });
+  },
+
+  /**
+   * Resetear contraseña de usuario
+   */
+  resetPassword: async (id) => {
+    return await apiClient.patch(`${USERS_BASE}/${id}/reset-password`);
+  },
+
+  /**
+   * Buscar usuarios (autocompletado)
+   */
+  search: async (query) => {
+    return await apiClient.get(
+      `${USERS_BASE}/search?q=${encodeURIComponent(query)}`
     );
-    return response.data;
   },
 
-  // Create new user
-  async createUser(userData) {
-    const response = await apiClient.post(
-      API_CONFIG.ENDPOINTS.USERS.BASE,
-      userData
-    );
-    return response.data;
+  /**
+   * Obtener subordinados de un usuario
+   */
+  getSubordinates: async (id) => {
+    return await apiClient.get(`${USERS_BASE}/${id}/subordinates`);
   },
 
-  // Update user
-  async updateUser(id, userData) {
-    const response = await apiClient.put(
-      `${API_CONFIG.ENDPOINTS.USERS.BASE}/${id}`,
-      userData
-    );
-    return response.data;
-  },
-
-  // Delete user
-  async deleteUser(id) {
-    const response = await apiClient.delete(
-      `${API_CONFIG.ENDPOINTS.USERS.BASE}/${id}`
-    );
-    return response.data;
-  },
-
-  // Upload avatar
-  async uploadAvatar(file) {
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    const response = await apiClient.upload(
-      API_CONFIG.ENDPOINTS.USERS.AVATAR,
-      formData
-    );
-    return response.data;
-  },
-
-  // Get user profile
-  async getProfile() {
-    const response = await apiClient.get(API_CONFIG.ENDPOINTS.USERS.PROFILE);
-    return response.data;
-  },
-
-  // Update user profile
-  async updateProfile(profileData) {
-    const response = await apiClient.put(
-      API_CONFIG.ENDPOINTS.USERS.PROFILE,
-      profileData
-    );
-    return response.data;
+  /**
+   * Obtener estadísticas de usuarios
+   */
+  getStatistics: async () => {
+    return await apiClient.get(`${USERS_BASE}/statistics`);
   },
 };

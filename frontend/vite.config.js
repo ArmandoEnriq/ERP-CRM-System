@@ -1,28 +1,32 @@
 import { defineConfig } from "vite"; // Funcion de vite que nos permite configurar el proyecto
 import react from "@vitejs/plugin-react"; // Plugin (paquete complementario) para soporte de react
 import path from "path"; // Modulo nativo de node.js para trabajar con rutas
+import tailwindcss from "@tailwindcss/vite"; // Plugin para soporte de tailwindcss
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()], // habilitamos el soporte de react (hot reload, jsx, etc)
+  plugins: [react(), tailwindcss()], // habilitamos el soporte de react (hot reload, jsx, etc)
   resolve: {
     alias: {
-      // Alias de rutas para facilitar la navegación
       "@": path.resolve(__dirname, "./src"),
       "@components": path.resolve(__dirname, "./src/components"),
       "@pages": path.resolve(__dirname, "./src/pages"),
+      "@hooks": path.resolve(__dirname, "./src/hooks"),
       "@services": path.resolve(__dirname, "./src/services"),
       "@store": path.resolve(__dirname, "./src/store"),
+      "@types": path.resolve(__dirname, "./src/types"),
       "@utils": path.resolve(__dirname, "./src/utils"),
       "@assets": path.resolve(__dirname, "./src/assets"),
-      "@hooks": path.resolve(__dirname, "./src/hooks"),
-      "@types": path.resolve(__dirname, "./src/types"),
     },
   },
   server: {
     // Configuraciones del servidor de desarrollo
     port: 5173, // Puerto de desarrollo
     host: true, // Permite que el servidor se pueda acceder desde cualquier dirección
+    watch: {
+      // Configuraciones de monitoreo de archivos
+      usePolling: true, // Habilita la detección de cambios mediante polling
+    },
     open: true, // Abre el navegador automáticamente
     proxy: {
       // Configuraciones de proxy (penticion al servidor backend)
@@ -46,12 +50,10 @@ export default defineConfig({
         // Configuraciones para el archivo de salida
         manualChunks: {
           // Divide el código en chunks (paquetes)
-          vendor: ["react", "react-dom"], // Paquetes de terceros
-          router: ["react-router-dom"], // Paquete de enrutamiento
-          ui: ["@headlessui/react", "@heroicons/react"], // Paquetes de interfaz de usuario
-          charts: ["recharts"], // Paquete de gráficos
-          forms: ["react-hook-form"], // Paquete de formularios
-          utils: ["lodash", "date-fns", "clsx"], // Paquetes de utilidades
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "ui-vendor": ["lucide-react", "react-hot-toast"],
+          "form-vendor": ["react-hook-form", "yup"],
+          "chart-vendor": ["recharts"],
         },
       },
     },

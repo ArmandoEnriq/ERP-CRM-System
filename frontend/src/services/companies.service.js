@@ -1,71 +1,117 @@
-// Servicio de empresas
-// QUÉ HACE: Maneja todas las operaciones relacionadas con empresas/organizaciones
-// PARA QUÉ:
-// - Multi-tenancy: Cada usuario puede pertenecer a una/varias empresas
-// - Configuración empresarial (datos fiscales, logos, configuraciones)
-// - Gestión de sucursales o departamentos
-// - Permisos y roles por empresa
-
 import { apiClient } from "./api";
-import { API_CONFIG } from "@/utils/constants";
+import { objectToQueryString } from "@/utils/helpers";
+
+const COMPANIES_BASE = "/companies";
 
 export const companiesService = {
-  // Get all companies
-  async getCompanies(params = {}) {
-    const response = await apiClient.get(API_CONFIG.ENDPOINTS.COMPANIES.BASE, {
-      params,
-    });
-    return response.data;
+  /**
+   * Listar empresas con filtros y paginación
+   */
+  getAll: async (params = {}) => {
+    const queryString = objectToQueryString(params);
+    return await apiClient.get(`${COMPANIES_BASE}${queryString}`);
   },
 
-  // Get company by ID
-  async getCompanyById(id) {
-    const response = await apiClient.get(
-      `${API_CONFIG.ENDPOINTS.COMPANIES.BASE}/${id}`
-    );
-    return response.data;
+  /**
+   * Obtener empresa por ID
+   */
+  getById: async (id) => {
+    return await apiClient.get(`${COMPANIES_BASE}/${id}`);
   },
 
-  // Get current user's company
-  async getCurrentCompany() {
-    const response = await apiClient.get(
-      API_CONFIG.ENDPOINTS.COMPANIES.CURRENT
-    );
-    return response.data;
+  /**
+   * Obtener mi empresa
+   */
+  getMyCompany: async () => {
+    return await apiClient.get(`${COMPANIES_BASE}/my-company`);
   },
 
-  // Create new company
-  async createCompany(companyData) {
-    const response = await apiClient.post(
-      API_CONFIG.ENDPOINTS.COMPANIES.BASE,
-      companyData
-    );
-    return response.data;
+  /**
+   * Crear nueva empresa
+   */
+  create: async (companyData) => {
+    return await apiClient.post(COMPANIES_BASE, companyData);
   },
 
-  // Update company
-  async updateCompany(id, companyData) {
-    const response = await apiClient.put(
-      `${API_CONFIG.ENDPOINTS.COMPANIES.BASE}/${id}`,
-      companyData
-    );
-    return response.data;
+  /**
+   * Actualizar empresa
+   */
+  update: async (id, companyData) => {
+    return await apiClient.patch(`${COMPANIES_BASE}/${id}`, companyData);
   },
 
-  // Delete company
-  async deleteCompany(id) {
-    const response = await apiClient.delete(
-      `${API_CONFIG.ENDPOINTS.COMPANIES.BASE}/${id}`
-    );
-    return response.data;
+  /**
+   * Eliminar empresa (soft delete)
+   */
+  delete: async (id) => {
+    return await apiClient.delete(`${COMPANIES_BASE}/${id}`);
   },
 
-  // Update current company
-  async updateCurrentCompany(companyData) {
-    const response = await apiClient.put(
-      API_CONFIG.ENDPOINTS.COMPANIES.CURRENT,
-      companyData
+  /**
+   * Cambiar estado de la empresa
+   */
+  changeStatus: async (id, status) => {
+    return await apiClient.patch(`${COMPANIES_BASE}/${id}/status`, { status });
+  },
+
+  /**
+   * Buscar empresas (autocompletado)
+   */
+  search: async (query) => {
+    return await apiClient.get(
+      `${COMPANIES_BASE}/search?q=${encodeURIComponent(query)}`
     );
-    return response.data;
+  },
+
+  /**
+   * Obtener contador de usuarios de una empresa
+   */
+  getUsersCount: async (id) => {
+    return await apiClient.get(`${COMPANIES_BASE}/${id}/users-count`);
+  },
+
+  /**
+   * Verificar si se pueden agregar más usuarios
+   */
+  canAddUser: async (id) => {
+    return await apiClient.get(`${COMPANIES_BASE}/${id}/can-add-user`);
+  },
+
+  /**
+   * Actualizar contador de usuarios
+   */
+  updateUserCount: async (id) => {
+    return await apiClient.patch(`${COMPANIES_BASE}/${id}/update-user-count`);
+  },
+
+  /**
+   * Obtener estadísticas de empresas
+   */
+  getStatistics: async () => {
+    return await apiClient.get(`${COMPANIES_BASE}/statistics`);
+  },
+
+  /**
+   * Obtener empresas con suscripción por vencer
+   */
+  getExpiringSoon: async (days = 30) => {
+    return await apiClient.get(`${COMPANIES_BASE}/expiring-soon?days=${days}`);
+  },
+
+  /**
+   * Obtener empresas con suscripción vencida
+   */
+  getExpired: async () => {
+    return await apiClient.get(`${COMPANIES_BASE}/expired`);
+  },
+
+  /**
+   * Renovar suscripción
+   */
+  renewSubscription: async (id, subscriptionData) => {
+    return await apiClient.patch(
+      `${COMPANIES_BASE}/${id}/subscription`,
+      subscriptionData
+    );
   },
 };

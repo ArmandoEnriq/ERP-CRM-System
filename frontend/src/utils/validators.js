@@ -1,217 +1,257 @@
-// Esquemas de validación con Yup (biblioteca de validación)
-// QUÉ HACE: Define todas las validaciones con Yup
-// PARA QUÉ:
-// - loginSchema: Validar email/password en login
-// - registerSchema: Validar registro de usuarios
-// - customerSchema: Validar datos de clientes
-// - productSchema: Validar productos del inventario
-// - orderSchema: Validar pedidos
-// - invoiceSchema: Validar facturas
-// - Mensajes de error en español
-
 import * as yup from "yup";
+import { VALIDATION } from "./constants";
 
-// Mensajes de error personalizados
-const messages = {
-  required: "Este campo es obligatorio",
-  email: "Ingresa un email válido",
-  min: "Debe tener al menos ${min} caracteres",
-  max: "No debe exceder ${max} caracteres",
-  phone: "Ingresa un teléfono válido",
-  password:
-    "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo",
-};
-
-// Configuración base de Yup
+// Mensajes de error personalizados en español
 yup.setLocale({
   mixed: {
-    required: messages.required,
+    required: "Este campo es obligatorio",
+    notType: "Formato inválido",
   },
   string: {
-    email: messages.email,
-    min: messages.min,
-    max: messages.max,
+    email: "Correo electrónico inválido",
+    min: "Debe tener al menos ${min} caracteres",
+    max: "Debe tener máximo ${max} caracteres",
+    matches: "Formato inválido",
+  },
+  number: {
+    min: "Debe ser mayor o igual a ${min}",
+    max: "Debe ser menor o igual a ${max}",
+    positive: "Debe ser un número positivo",
   },
 });
 
-// Validaciones comunes
-export const commonValidations = {
-  email: yup.string().email().required(),
-  password: yup
-    .string()
-    .min(8)
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      messages.password
-    )
-    .required(),
-  confirmPassword: yup
-    .string()
-    .oneOf([yup.ref("password")], "Las contraseñas no coinciden")
-    .required(),
-  phone: yup
-    .string()
-    .matches(/^[\+]?[1-9][\d]{0,15}$/, messages.phone)
-    .nullable(),
-  name: yup.string().min(2).max(50).required(),
-  description: yup.string().max(500),
-  url: yup.string().url("Ingresa una URL válida").nullable(),
-  taxId: yup
-    .string()
-    .matches(/^[A-Z]{4}\d{6}[A-Z\d]{3}$/, "Formato de RFC inválido")
-    .nullable(),
-};
-
-// Esquemas de validación
-
-// Auth
+// Schema de validación para login
 export const loginSchema = yup.object({
-  email: commonValidations.email,
-  password: yup.string().required(),
+  email: yup.string().required().email().trim(),
+  password: yup.string().required().min(VALIDATION.PASSWORD_MIN_LENGTH),
   rememberMe: yup.boolean(),
 });
 
+// Schema de validación para registro
 export const registerSchema = yup.object({
-  firstName: commonValidations.name,
-  lastName: commonValidations.name,
-  email: commonValidations.email,
-  password: commonValidations.password,
-  confirmPassword: commonValidations.confirmPassword,
+  firstName: yup
+    .string()
+    .required("El nombre es obligatorio")
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(50, "El nombre debe tener máximo 50 caracteres")
+    .trim(),
+  lastName: yup
+    .string()
+    .required("El apellido es obligatorio")
+    .min(2, "El apellido debe tener al menos 2 caracteres")
+    .max(50, "El apellido debe tener máximo 50 caracteres")
+    .trim(),
+  email: yup.string().required().email().trim(),
+  password: yup
+    .string()
+    .required()
+    .min(VALIDATION.PASSWORD_MIN_LENGTH)
+    .matches(
+      VALIDATION.PASSWORD_PATTERN,
+      "La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial"
+    ),
+  confirmPassword: yup
+    .string()
+    .required("Confirma tu contraseña")
+    .oneOf([yup.ref("password")], "Las contraseñas no coinciden"),
+  companyName: yup
+    .string()
+    .required("El nombre de la empresa es obligatorio")
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(100, "El nombre debe tener máximo 100 caracteres")
+    .trim(),
   acceptTerms: yup
     .boolean()
     .oneOf([true], "Debes aceptar los términos y condiciones"),
 });
 
-export const forgotPasswordSchema = yup.object({
-  email: commonValidations.email,
-});
-
-export const resetPasswordSchema = yup.object({
-  password: commonValidations.password,
-  confirmPassword: commonValidations.confirmPassword,
-});
-
-// User Profile
-export const profileSchema = yup.object({
-  firstName: commonValidations.name,
-  lastName: commonValidations.name,
-  email: commonValidations.email,
-  phone: commonValidations.phone,
-  avatar: yup.string().nullable(),
-});
-
+// Schema de validación para cambio de contraseña
 export const changePasswordSchema = yup.object({
-  currentPassword: yup.string().required(),
-  newPassword: commonValidations.password,
+  currentPassword: yup.string().required("La contraseña actual es obligatoria"),
+  newPassword: yup
+    .string()
+    .required("La nueva contraseña es obligatoria")
+    .min(VALIDATION.PASSWORD_MIN_LENGTH)
+    .matches(
+      VALIDATION.PASSWORD_PATTERN,
+      "La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial"
+    )
+    .notOneOf(
+      [yup.ref("currentPassword")],
+      "La nueva contraseña debe ser diferente a la actual"
+    ),
+  confirmNewPassword: yup
+    .string()
+    .required("Confirma tu nueva contraseña")
+    .oneOf([yup.ref("newPassword")], "Las contraseñas no coinciden"),
+});
+
+// Schema de validación para recuperar contraseña
+export const forgotPasswordSchema = yup.object({
+  email: yup.string().required().email().trim(),
+});
+
+// Schema de validación para resetear contraseña
+export const resetPasswordSchema = yup.object({
+  password: yup
+    .string()
+    .required()
+    .min(VALIDATION.PASSWORD_MIN_LENGTH)
+    .matches(
+      VALIDATION.PASSWORD_PATTERN,
+      "La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial"
+    ),
   confirmPassword: yup
     .string()
-    .oneOf([yup.ref("newPassword")], "Las contraseñas no coinciden")
-    .required(),
+    .required("Confirma tu contraseña")
+    .oneOf([yup.ref("password")], "Las contraseñas no coinciden"),
 });
 
-// Company
-export const companySchema = yup.object({
-  name: yup.string().min(2).max(100).required(),
-  taxId: commonValidations.taxId,
-  email: commonValidations.email,
-  phone: commonValidations.phone,
-  website: commonValidations.url,
-  address: yup.string().max(200),
-  city: yup.string().max(50),
-  state: yup.string().max(50),
-  zipCode: yup.string().max(10),
-  country: yup.string().max(50),
+// Schema de validación para perfil de usuario
+export const userProfileSchema = yup.object({
+  firstName: yup
+    .string()
+    .required("El nombre es obligatorio")
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(50, "El nombre debe tener máximo 50 caracteres")
+    .trim(),
+  lastName: yup
+    .string()
+    .required("El apellido es obligatorio")
+    .min(2, "El apellido debe tener al menos 2 caracteres")
+    .max(50, "El apellido debe tener máximo 50 caracteres")
+    .trim(),
+  email: yup.string().required().email().trim(),
+  phone: yup
+    .string()
+    .nullable()
+    .matches(VALIDATION.PHONE_PATTERN, "Teléfono inválido"),
+  position: yup
+    .string()
+    .nullable()
+    .max(100, "El puesto debe tener máximo 100 caracteres"),
 });
 
-// CRM Schemas
-export const customerSchema = yup.object({
-  firstName: commonValidations.name,
-  lastName: commonValidations.name,
-  email: commonValidations.email,
-  phone: commonValidations.phone,
-  company: yup.string().max(100),
-  position: yup.string().max(50),
-  address: yup.string().max(200),
-  notes: commonValidations.description,
-  customerType: yup.string().oneOf(["individual", "company"]).required(),
-});
-
-export const leadSchema = yup.object({
-  firstName: commonValidations.name,
-  lastName: commonValidations.name,
-  email: commonValidations.email,
-  phone: commonValidations.phone,
-  company: yup.string().max(100),
-  source: yup.string().max(50),
+// Schema de validación para crear/editar usuario
+export const userFormSchema = yup.object({
+  firstName: yup
+    .string()
+    .required("El nombre es obligatorio")
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(50, "El nombre debe tener máximo 50 caracteres")
+    .trim(),
+  lastName: yup
+    .string()
+    .required("El apellido es obligatorio")
+    .min(2, "El apellido debe tener al menos 2 caracteres")
+    .max(50, "El apellido debe tener máximo 50 caracteres")
+    .trim(),
+  email: yup.string().required().email().trim(),
+  role: yup
+    .string()
+    .required("El rol es obligatorio")
+    .oneOf(["super_admin", "admin", "manager", "user"], "Rol inválido"),
   status: yup
     .string()
-    .oneOf(["new", "contacted", "qualified", "converted", "lost"])
-    .required(),
-  notes: commonValidations.description,
+    .required("El estado es obligatorio")
+    .oneOf(["active", "inactive", "pending", "suspended"], "Estado inválido"),
+  phone: yup
+    .string()
+    .nullable()
+    .matches(VALIDATION.PHONE_PATTERN, "Teléfono inválido"),
+  position: yup
+    .string()
+    .nullable()
+    .max(100, "El puesto debe tener máximo 100 caracteres"),
+  companyId: yup.string().nullable(),
 });
 
-// ERP Schemas
-export const productSchema = yup.object({
-  name: yup.string().min(2).max(100).required(),
-  sku: yup.string().min(2).max(50).required(),
-  description: commonValidations.description,
-  category: yup.string().max(50),
-  price: yup.number().positive("El precio debe ser mayor a 0").required(),
-  cost: yup.number().positive("El costo debe ser mayor a 0"),
-  stock: yup
+// Schema de validación para empresa
+export const companyFormSchema = yup.object({
+  name: yup
+    .string()
+    .required("El nombre de la empresa es obligatorio")
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(100, "El nombre debe tener máximo 100 caracteres")
+    .trim(),
+  tradeName: yup
+    .string()
+    .nullable()
+    .max(100, "El nombre comercial debe tener máximo 100 caracteres")
+    .trim(),
+  rfc: yup
+    .string()
+    .required("El RFC es obligatorio")
+    .matches(VALIDATION.RFC_PATTERN, "RFC inválido")
+    .trim()
+    .uppercase(),
+  status: yup
+    .string()
+    .required("El estado es obligatorio")
+    .oneOf(["active", "inactive", "suspended", "trial"], "Estado inválido"),
+  size: yup
+    .string()
+    .required("El tamaño de la empresa es obligatorio")
+    .oneOf(["small", "medium", "large", "enterprise"], "Tamaño inválido"),
+  street: yup
+    .string()
+    .required("La calle es obligatoria")
+    .max(200, "La calle debe tener máximo 200 caracteres"),
+  city: yup
+    .string()
+    .required("La ciudad es obligatoria")
+    .max(100, "La ciudad debe tener máximo 100 caracteres"),
+  state: yup
+    .string()
+    .required("El estado es obligatorio")
+    .max(100, "El estado debe tener máximo 100 caracteres"),
+  postalCode: yup
+    .string()
+    .required("El código postal es obligatorio")
+    .matches(VALIDATION.POSTAL_CODE_PATTERN, "Código postal inválido"),
+  country: yup
+    .string()
+    .required("El país es obligatorio")
+    .max(100, "El país debe tener máximo 100 caracteres"),
+  phone: yup
+    .string()
+    .nullable()
+    .matches(VALIDATION.PHONE_PATTERN, "Teléfono inválido"),
+  email: yup.string().nullable().email(),
+  website: yup.string().nullable().url("URL inválida"),
+  plan: yup
+    .string()
+    .required("El plan es obligatorio")
+    .oneOf(["free", "basic", "professional", "enterprise"], "Plan inválido"),
+  maxUsers: yup
     .number()
-    .integer()
-    .min(0, "El stock no puede ser negativo")
-    .required(),
-  minStock: yup.number().integer().min(0),
-  maxStock: yup.number().integer().min(0),
-  weight: yup.number().positive(),
-  dimensions: yup.string().max(50),
-  barcode: yup.string().max(50),
-  isActive: yup.boolean(),
+    .required("El número máximo de usuarios es obligatorio")
+    .min(1, "Debe permitir al menos 1 usuario")
+    .max(999, "El máximo es 999 usuarios"),
 });
 
-export const orderSchema = yup.object({
-  customerId: yup.string().required(),
-  orderDate: yup.date().required(),
-  dueDate: yup
-    .date()
-    .min(
-      yup.ref("orderDate"),
-      "La fecha de entrega no puede ser anterior a la fecha del pedido"
-    ),
-  status: yup
-    .string()
-    .oneOf([
-      "draft",
-      "pending",
-      "confirmed",
-      "processing",
-      "shipped",
-      "delivered",
-      "cancelled",
-    ])
-    .required(),
-  notes: commonValidations.description,
-  discount: yup.number().min(0).max(100),
-  tax: yup.number().min(0),
-});
+// Función helper para validar un formulario completo
+export const validateForm = async (schema, data) => {
+  try {
+    await schema.validate(data, { abortEarly: false });
+    return { isValid: true, errors: {} };
+  } catch (error) {
+    const errors = {};
+    error.inner.forEach((err) => {
+      if (err.path) {
+        errors[err.path] = err.message;
+      }
+    });
+    return { isValid: false, errors };
+  }
+};
 
-export const invoiceSchema = yup.object({
-  customerId: yup.string().required(),
-  orderId: yup.string().nullable(),
-  invoiceDate: yup.date().required(),
-  dueDate: yup
-    .date()
-    .min(
-      yup.ref("invoiceDate"),
-      "La fecha de vencimiento no puede ser anterior a la fecha de factura"
-    ),
-  status: yup
-    .string()
-    .oneOf(["draft", "sent", "paid", "overdue", "cancelled"])
-    .required(),
-  notes: commonValidations.description,
-  discount: yup.number().min(0).max(100),
-  tax: yup.number().min(0).required(),
-});
+// Función helper para validar un campo específico
+export const validateField = async (schema, fieldName, value) => {
+  try {
+    await schema.validateAt(fieldName, { [fieldName]: value });
+    return { isValid: true, error: null };
+  } catch (error) {
+    return { isValid: false, error: error.message };
+  }
+};

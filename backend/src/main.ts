@@ -117,12 +117,12 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`
-🚀 ${appName} is running!
-🌍 Environment: ${environment}
-🔗 API URL: http://localhost:${port}/${globalPrefix}
-📖 Health Check: http://localhost:${port}/health
-⏰ Started at: ${new Date().toLocaleString()}
-💾 Memory Usage: ${Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100} MB
+${appName} is running!
+Environment: ${environment}
+API URL: http://localhost:${port}/${globalPrefix}
+Health Check: http://localhost:${port}/health
+Started at: ${new Date().toLocaleString()}
+Memory Usage: ${Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100} MB
   `);
 
   // Manejo de errores no capturadas

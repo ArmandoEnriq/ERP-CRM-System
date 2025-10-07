@@ -1,125 +1,192 @@
-// Servicio de autenticación
-// QUÉ HACE: Maneja todas las operaciones de autenticación
-// PARA QUÉ:
-// - login(): Iniciar sesión y guardar tokens
-// - register(): Crear nuevas cuentas
-// - logout(): Cerrar sesión y limpiar tokens
-// - getProfile(): Obtener datos del usuario actual
-// - forgotPassword(): Recuperar contraseña
-// - refreshToken(): Renovar tokens expirados
-
 import { apiClient } from "./api";
-import { API_CONFIG, STORAGE_KEYS } from "@/utils/constants";
+import { TOKEN_KEY, REFRESH_TOKEN_KEY, USER_KEY } from "@/utils/constants";
+
+const AUTH_BASE = "/auth";
 
 export const authService = {
-  // Login
-  async login(credentials) {
-    const response = await apiClient.post(
-      API_CONFIG.ENDPOINTS.AUTH.LOGIN,
-      credentials
-    );
+  /**
+   * Iniciar sesión
+   */
+  login: async (credentials) => {
+    const response = await apiClient.post(`${AUTH_BASE}/login`, credentials);
 
-    if (response.data.access_token) {
-      localStorage.setItem(
-        STORAGE_KEYS.ACCESS_TOKEN,
-        response.data.access_token
-      );
-      if (response.data.refresh_token) {
-        localStorage.setItem(
-          STORAGE_KEYS.REFRESH_TOKEN,
-          response.data.refresh_token
-        );
-      }
+    // Guardar tokens y datos del usuario
+    if (response.accessToken) {
+      localStorage.setItem(TOKEN_KEY, response.accessToken);
+    }
+    if (response.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+    }
+    if (response.user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
     }
 
-    return response.data;
+    return response;
   },
 
-  // Register
-  async register(userData) {
-    const response = await apiClient.post(
-      API_CONFIG.ENDPOINTS.AUTH.REGISTER,
-      userData
-    );
-    return response.data;
+  /**
+   * Registrar nuevo usuario
+   */
+  register: async (userData) => {
+    const response = await apiClient.post(`${AUTH_BASE}/register`, userData);
+
+    // Guardar tokens y datos del usuario
+    if (response.accessToken) {
+      localStorage.setItem(TOKEN_KEY, response.accessToken);
+    }
+    if (response.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+    }
+    if (response.user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+    }
+
+    return response;
   },
 
-  // Logout
-  async logout() {
+  /**
+   * Cerrar sesión
+   */
+  logout: async () => {
     try {
-      await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+      await apiClient.post(`${AUTH_BASE}/logout`);
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Error during logout:", error);
     } finally {
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      // Limpiar localStorage independientemente del resultado
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
     }
   },
 
-  // Get current user profile
-  async getProfile() {
-    const response = await apiClient.get(API_CONFIG.ENDPOINTS.AUTH.PROFILE);
-    return response.data;
+  /**
+   * Cerrar todas las sesiones
+   */
+  logoutAll: async () => {
+    try {
+      await apiClient.post(`${AUTH_BASE}/logout-all`);
+    } catch (error) {
+      console.error("Error during logout all:", error);
+    } finally {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+    }
   },
 
-  // Update profile
-  async updateProfile(profileData) {
-    const response = await apiClient.put(
-      API_CONFIG.ENDPOINTS.AUTH.PROFILE,
-      profileData
-    );
-    return response.data;
-  },
+  /**
+   * Refrescar token
+   */
+  refreshToken: async () => {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
-  // Forgot password
-  async forgotPassword(email) {
-    const response = await apiClient.post(
-      API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD,
-      { email }
-    );
-    return response.data;
-  },
-
-  // Reset password
-  async resetPassword(token, newPassword) {
-    const response = await apiClient.post(
-      API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD,
-      {
-        token,
-        password: newPassword,
-      }
-    );
-    return response.data;
-  },
-
-  // Refresh token
-  async refreshToken() {
-    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
     if (!refreshToken) {
       throw new Error("No refresh token available");
     }
 
-    const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.REFRESH, {
-      refresh_token: refreshToken,
+    const response = await apiClient.post(`${AUTH_BASE}/refresh`, {
+      refreshToken,
     });
 
-    if (response.data.access_token) {
-      localStorage.setItem(
-        STORAGE_KEYS.ACCESS_TOKEN,
-        response.data.access_token
-      );
+    if (response.accessToken) {
+      localStorage.setItem(TOKEN_KEY, response.accessToken);
+    }
+    if (response.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
     }
 
-    return response.data;
+    return response;
   },
 
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  /**
+   * Cambiar contraseña
+   */
+  changePassword: async (passwords) => {
+    return await apiClient.patch(`${AUTH_BASE}/change-password`, passwords);
   },
 
-  // Get stored token
-  getToken() {
-    return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  /**
+   * Solicitar restablecimiento de contraseña
+   */
+  forgotPassword: async (email) => {
+    return await apiClient.post(`${AUTH_BASE}/forgot-password`, { email });
+  },
+
+  /**
+   * Restablecer contraseña con token
+   */
+  resetPassword: async (token, password) => {
+    return await apiClient.post(`${AUTH_BASE}/reset-password`, {
+      token,
+      password,
+    });
+  },
+
+  /**
+   * Obtener perfil del usuario actual
+   */
+  getProfile: async () => {
+    return await apiClient.get(`${AUTH_BASE}/profile`);
+  },
+
+  /**
+   * Obtener sesiones activas
+   */
+  getSessions: async () => {
+    return await apiClient.get(`${AUTH_BASE}/sessions`);
+  },
+
+  /**
+   * Terminar una sesión específica
+   */
+  terminateSession: async (sessionId) => {
+    return await apiClient.delete(`${AUTH_BASE}/sessions/${sessionId}`);
+  },
+
+  /**
+   * Verificar si el usuario está autenticado
+   */
+  isAuthenticated: () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    return !!token;
+  },
+
+  /**
+   * Obtener token actual
+   */
+  getToken: () => {
+    return localStorage.getItem(TOKEN_KEY);
+  },
+
+  /**
+   * Obtener refresh token actual
+   */
+  getRefreshToken: () => {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  },
+
+  /**
+   * Obtener datos del usuario del localStorage
+   */
+  getCurrentUser: () => {
+    const userData = localStorage.getItem(USER_KEY);
+    return userData ? JSON.parse(userData) : null;
+  },
+
+  /**
+   * Actualizar datos del usuario en localStorage
+   */
+  updateCurrentUser: (user) => {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  },
+
+  /**
+   * Limpiar autenticación
+   */
+  clearAuth: () => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
   },
 };

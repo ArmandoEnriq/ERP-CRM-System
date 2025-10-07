@@ -3,144 +3,115 @@
 # =====================================================
 
 # ========================================
-# DEPENDENCIES AND PACKAGES
+# LOGS Y ARCHIVOS TEMPORALES
 # ========================================
-
-# Node.js dependencies
-node_modules/
+*.log
+logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+*.tsbuildinfo
 
-# Package lock files (comment out the ones you want to keep)
+# ========================================
+# DEPENDENCIAS Y PAQUETES
+# ========================================
+node_modules/
+.npm
+.pnpm-debug.log*
+.yarn-integrity
+
+# ========================================
+# ARCHIVOS DE BLOQUEO
+# ========================================
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
 # ========================================
-# ENVIRONMENT AND CONFIG FILES
+# ARCHIVOS DE ENTORNO Y CONFIGURACIÓN
 # ========================================
-
-# Environment variables
 .env
+.env.*
+*.env
+*.local
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-
-# But keep example files
 !.env.example
 !.env.development
 !.env.production
 
-# Configuration files with secrets
+# ========================================
+# CONFIGURACIONES SENSIBLES
+# ========================================
 config/secrets.json
 config/database.json
 config/production.json
+.secrets
+secrets.json
+.env.secrets
+jwt-secret.txt
 
 # ========================================
-# LOGS AND RUNTIME DATA
+# DIRECTORIOS Y ARCHIVOS DE COMPILACIÓN
 # ========================================
-
-# Logs
-logs/
-*.log
-lerna-debug.log*
-.npm
-.eslintcache
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output/
-
-# ========================================
-# DATABASE AND DATA FILES
-# ========================================
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Database dumps and backups
-database/backups/*.sql
-database/backups/*.sql.gz
-database/backups/*.dump
-backup_*.sql
-backup_*.sql.gz
-
-# Data directories
-data/postgres/
-data/redis/
-data/uploads/
-uploads/
-
-# Migration temporary files
-database/migrations/tmp/
-
-# ========================================
-# BUILD OUTPUT AND CACHE
-# ========================================
-
-# Build directories
 dist/
 build/
 out/
 .next/
 .nuxt/
-
-# Cache directories
 .cache/
 .parcel-cache/
 .vite/
 .turbo/
-
-# Webpack cache
 .webpack/
+.serverless/
+.dynamodb/
+.nyc_output/
+coverage/
+*.lcov
 
 # ========================================
-# DEVELOPMENT TOOLS
+# BASES DE DATOS Y RESPALDOS
 # ========================================
+*.db
+*.sqlite
+*.sqlite3
+database/backups/*
+database/backups/*.sql
+database/backups/*.sql.gz
+database/backups/*.dump
+backup_*.sql
+backup_*.sql.gz
+data/postgres/*
+!data/postgres/.gitkeep
+data/redis/*
+!data/redis/.gitkeep
+data/uploads/
+uploads/
+database/migrations/tmp/
 
-# IDE and Editor files
+# ========================================
+# IDEs Y EDITORES
+# ========================================
 .vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/settings.template.json
-
 .idea/
 *.swp
 *.swo
 *~
-
-# Sublime Text
 *.sublime-project
 *.sublime-workspace
 
-# Vim
-[._]*.s[a-v][a-z]
-[._]*.sw[a-p]
-[._]s[a-rt-v][a-z]
-[._]ss[a-gi-z]
-[._]sw[a-p]
-
 # ========================================
-# OPERATING SYSTEM FILES
+# SISTEMAS OPERATIVOS
 # ========================================
-
-# macOS
 .DS_Store
 .DS_Store?
 ._*
@@ -152,8 +123,6 @@ out/
 .fseventsd
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
-
-# Windows
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
@@ -167,232 +136,123 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
-
-# Linux
 *~
 .directory
 .Trash-*
 
 # ========================================
-# DOCKER AND CONTAINERS
+# DOCKER Y CONTENEDORES
 # ========================================
-
-# Docker volumes data (but keep structure)
-data/postgres/*
-!data/postgres/.gitkeep
-data/redis/*
-!data/redis/.gitkeep
-
-# Docker override files (personal configurations)
-docker-compose.override.yml
-
-# Container logs
 docker/logs/
+docker-compose.override.yml
 
 # ========================================
 # TESTING
 # ========================================
-
-# Test results
 test-results/
 junit.xml
 coverage.xml
 *.cover
 .coverage
 .coverage.*
-
-# Jest
-.nyc_output/
-
-# Cypress
 cypress/videos/
 cypress/screenshots/
 cypress/fixtures/downloads/
 
 # ========================================
-# TEMPORARY FILES
+# ARCHIVOS TEMPORALES Y DE RESPALDO
 # ========================================
-
-# Temporary directories
 tmp/
 temp/
 .tmp/
-
-# Lock files
 *.lock
-
-# Backup files
 *.bak
 *.backup
 *.old
 *.orig
 
 # ========================================
-# SECURITY AND SENSITIVE DATA
+# CLAVES Y CERTIFICADOS
 # ========================================
-
-# Private keys
 *.pem
 *.key
 !public.key
-
-# SSL certificates
 *.crt
 *.csr
 *.p12
 *.pfx
 
-# JWT secrets
-jwt-secret.txt
-
-# API keys and tokens
-.secrets
-secrets.json
-.env.secrets
-
 # ========================================
-# DOCUMENTATION BUILD
+# DOCUMENTACIÓN Y BUILD
 # ========================================
-
-# Generated documentation
 docs/_build/
 docs/.doctrees/
 docs/api/
-
-# Storybook build
 storybook-static/
 
 # ========================================
-# FRONTEND SPECIFIC
+# FRONTEND Y REACT
 # ========================================
-
-# React/Vite build artifacts
 .vite/
-vite.config.*.timestamp-*
-
-# ESLint cache
-.eslintcache
-
-# Stylelint cache
-.stylelintcache
-
-# Optional REPL history
+vite.config.*.timestamp-
 .node_repl_history
-
-# Output of 'npm pack'
 *.tgz
 
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache
-.cache
-.parcel-cache
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
 # ========================================
-# BACKEND SPECIFIC
+# BACKEND Y NESTJS
 # ========================================
-
-# NestJS build
 dist/
-
-# TypeORM
 ormconfig.env
-
-# PM2
 .pm2/
 
 # ========================================
-# CLOUD AND DEPLOYMENT
+# CLOUD Y DEPLOYMENT
 # ========================================
-
-# Terraform
 *.tfstate
 *.tfstate.*
 .terraform/
 .terraform.lock.hcl
-
-# Kubernetes secrets
 k8s-secrets.yml
-
-# Helm charts dependencies
 charts/*/charts/
 charts/*/requirements.lock
 
 # ========================================
-# MONITORING AND ANALYTICS
+# MONITOREO Y ANALÍTICAS
 # ========================================
-
-# Sentry
 .sentryclirc
-
-# NewRelic
 newrelic_agent.log
 
 # ========================================
-# CUSTOM PROJECT FILES
+# ARCHIVOS PERSONALIZADOS DEL PROYECTO
 # ========================================
-
-# Project specific temporary files
 .project-tmp/
-
-# Local development overrides
 local.config.js
 local.settings.json
-
-# Personal notes and todos
 NOTES.md
 TODO.md
 *.personal.md
-
-# Scripts personales de desarrollo
 scripts/personal/
-scripts/dev-*
-
-# Archivos de testing local
+scripts/dev-
 test-data/
 mock-data/
 
 # ========================================
-# KEEP IMPORTANT STRUCTURE FILES
+# MANTENER ESTRUCTURA IMPORTANTE
 # ========================================
-
-# Keep empty directories with .gitkeep
 !.gitkeep
-
-# Keep important config templates
 !docker-compose.*.yml
 !Dockerfile*
 !nginx.conf
 !package.json
 !tsconfig.json
-
-# Keep documentation
 !README.md
 !CHANGELOG.md
 !LICENSE
 !docs/README.md
-
-# Keep important scripts
 !scripts/setup.sh
 !scripts/backup.sh
 !scripts/deploy.sh
 
 # ========================================
-# END OF GITIGNORE
+# FIN DEL GITIGNORE
 # ========================================

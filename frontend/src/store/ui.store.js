@@ -1,138 +1,131 @@
-// Store para el estado de la UI
-// QUÉ HACE: Controla el estado de la UI
-// PARA QUÉ:
-// - Sidebar colapsado/expandido
-// - Tema (light/dark)
-// - Idioma de la aplicación
-// - Notificaciones en tiempo real
-// - Modales globales
-// - Loading states por operación
-
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
 
-export const useUIStore = create(
-  persist(
-    (set, get) => ({
-      // State
-      sidebarCollapsed: false,
-      theme: "light",
-      language: "es",
-      notifications: [],
+export const useUIStore = create((set) => ({
+  // Sidebar
+  sidebarOpen: true,
+  sidebarCollapsed: false,
+
+  // Modales
+  modals: {},
+
+  // Loading global
+  globalLoading: false,
+
+  // Theme
+  theme: localStorage.getItem("theme") || "light",
+
+  // Breadcrumbs
+  breadcrumbs: [],
+
+  // Page title
+  pageTitle: "",
+
+  // Acciones
+
+  /**
+   * Toggle sidebar
+   */
+  toggleSidebar: () =>
+    set((state) => ({
+      sidebarOpen: !state.sidebarOpen,
+    })),
+
+  /**
+   * Cerrar sidebar
+   */
+  closeSidebar: () => set({ sidebarOpen: false }),
+
+  /**
+   * Abrir sidebar
+   */
+  openSidebar: () => set({ sidebarOpen: true }),
+
+  /**
+   * Toggle sidebar collapsed
+   */
+  toggleSidebarCollapsed: () =>
+    set((state) => ({
+      sidebarCollapsed: !state.sidebarCollapsed,
+    })),
+
+  /**
+   * Abrir modal
+   */
+  openModal: (modalId, data = null) =>
+    set((state) => ({
       modals: {
-        isOpen: false,
-        type: null,
-        data: null,
+        ...state.modals,
+        [modalId]: { open: true, data },
       },
-      loading: {
-        global: false,
-        operations: {},
+    })),
+
+  /**
+   * Cerrar modal
+   */
+  closeModal: (modalId) =>
+    set((state) => ({
+      modals: {
+        ...state.modals,
+        [modalId]: { open: false, data: null },
       },
+    })),
 
-      // Sidebar Actions
-      toggleSidebar: () =>
-        set((state) => ({
-          sidebarCollapsed: !state.sidebarCollapsed,
-        })),
+  /**
+   * Verificar si modal está abierto
+   */
+  isModalOpen: (modalId) => {
+    const state = useUIStore.getState();
+    return state.modals[modalId]?.open || false;
+  },
 
-      setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  /**
+   * Obtener datos del modal
+   */
+  getModalData: (modalId) => {
+    const state = useUIStore.getState();
+    return state.modals[modalId]?.data || null;
+  },
 
-      // Theme Actions
-      setTheme: (theme) => set({ theme }),
+  /**
+   * Mostrar loading global
+   */
+  showGlobalLoading: () => set({ globalLoading: true }),
 
-      toggleTheme: () =>
-        set((state) => ({
-          theme: state.theme === "light" ? "dark" : "light",
-        })),
+  /**
+   * Ocultar loading global
+   */
+  hideGlobalLoading: () => set({ globalLoading: false }),
 
-      // Language Actions
-      setLanguage: (language) => set({ language }),
+  /**
+   * Cambiar tema
+   */
+  setTheme: (theme) => {
+    localStorage.setItem("theme", theme);
+    set({ theme });
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  },
 
-      // Notification Actions
-      addNotification: (notification) =>
-        set((state) => ({
-          notifications: [
-            ...state.notifications,
-            {
-              id: Date.now().toString(),
-              timestamp: new Date(),
-              ...notification,
-            },
-          ],
-        })),
-
-      removeNotification: (id) =>
-        set((state) => ({
-          notifications: state.notifications.filter((n) => n.id !== id),
-        })),
-
-      clearNotifications: () => set({ notifications: [] }),
-
-      // Modal Actions
-      openModal: (type, data = null) =>
-        set({
-          modals: {
-            isOpen: true,
-            type,
-            data,
-          },
-        }),
-
-      closeModal: () =>
-        set({
-          modals: {
-            isOpen: false,
-            type: null,
-            data: null,
-          },
-        }),
-
-      // Loading Actions
-      setGlobalLoading: (loading) =>
-        set((state) => ({
-          loading: {
-            ...state.loading,
-            global: loading,
-          },
-        })),
-
-      setOperationLoading: (operation, loading) =>
-        set((state) => ({
-          loading: {
-            ...state.loading,
-            operations: {
-              ...state.loading.operations,
-              [operation]: loading,
-            },
-          },
-        })),
-
-      clearOperationLoading: (operation) =>
-        set((state) => {
-          const newOperations = { ...state.loading.operations };
-          delete newOperations[operation];
-          return {
-            loading: {
-              ...state.loading,
-              operations: newOperations,
-            },
-          };
-        }),
-
-      // Utility methods
-      isOperationLoading: (operation) => {
-        const state = get();
-        return state.loading.operations[operation] || false;
-      },
+  /**
+   * Toggle tema
+   */
+  toggleTheme: () =>
+    set((state) => {
+      const newTheme = state.theme === "light" ? "dark" : "light";
+      localStorage.setItem("theme", newTheme);
+      document.documentElement.classList.toggle("dark", newTheme === "dark");
+      return { theme: newTheme };
     }),
-    {
-      name: "ui-storage",
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        sidebarCollapsed: state.sidebarCollapsed,
-        theme: state.theme,
-        language: state.language,
-      }),
-    }
-  )
-);
+
+  /**
+   * Establecer breadcrumbs
+   */
+  setBreadcrumbs: (breadcrumbs) => set({ breadcrumbs }),
+
+  /**
+   * Establecer título de página
+   */
+  setPageTitle: (title) => {
+    set({ pageTitle: title });
+    document.title = title ? `${title} - ERP/CRM System` : "ERP/CRM System";
+  },
+}));
